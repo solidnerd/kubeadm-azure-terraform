@@ -1,23 +1,3 @@
-variable azure {
-  type = "map"
-}
-
-variable resource_group_name {}
-variable location {}
-variable master_ip {}
-variable subnet_id {}
-variable count {}
-variable admin_username {}
-variable admin_password {}
-variable ssh_key {}
-variable node_size {}
-variable computer_name_prefix {}
-variable kubeadm_token {}
-
-variable node_labels {
-  type = "list"
-}
-
 resource "azurerm_virtual_machine_scale_set" "vmss" {
   name                = "node${count.index}"
   location            = "${var.location}"
@@ -69,22 +49,5 @@ resource "azurerm_virtual_machine_scale_set" "vmss" {
       name      = "IPConfiguration"
       subnet_id = "${var.subnet_id}"
     }
-  }
-}
-
-data "template_file" "cloud-config" {
-  template = "${file("${path.root}/bootstrap/bootstrap.sh")}"
-
-  vars {
-    SUBSCRIPTION_ID = "${var.azure["subscription_id"]}"
-    TENANT_ID       = "${var.azure["tenant_id"]}"
-    CLIENT_ID       = "${var.azure["client_id"]}"
-    CLIENT_SECRET   = "${var.azure["client_secret"]}"
-    LOCATION        = "${var.location}"
-    RESOURCE_GROUP  = "${var.resource_group_name}"
-    master_ip       = "${var.master_ip}"
-    node_labels     = "${join(",", var.node_labels)}"
-    admin_username  = "${var.admin_username}"
-    kubeadm_token   = "${var.kubeadm_token}"
   }
 }

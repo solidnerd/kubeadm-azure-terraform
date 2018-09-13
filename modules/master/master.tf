@@ -1,23 +1,3 @@
-variable azure {
-  type = "map"
-}
-
-variable resource_group_name {}
-variable count {}
-variable location {}
-variable master_ip {}
-variable subnet_id {}
-variable admin_username {}
-variable admin_password {}
-variable computer_name {}
-variable ssh_key {}
-variable master_size {}
-variable kubeadm_token {}
-
-variable node_labels {
-  type = "list"
-}
-
 resource "azurerm_availability_set" "availability_set" {
   name                = "masteras"
   location            = "${var.location}"
@@ -38,42 +18,6 @@ resource "azurerm_network_interface" "masternic" {
     load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.backend_pool.*.id}"]
     load_balancer_inbound_nat_rules_ids     = ["${element(azurerm_lb_nat_rule.ssh.*.id, count.index)}"]
   }
-}
-
-resource "azurerm_public_ip" "masterpip" {
-  name                         = "masterpip"
-  location                     = "${var.location}"
-  resource_group_name          = "${var.resource_group_name}"
-  public_ip_address_allocation = "Static"
-  domain_name_label            = "${var.resource_group_name}"
-}
-
-resource "azurerm_lb" "masterlb" {
-  name                = "masterlb"
-  location            = "${var.location}"
-  resource_group_name = "${var.resource_group_name}"
-
-  frontend_ip_configuration {
-    name                 = "PublicIPAddress"
-    public_ip_address_id = "${azurerm_public_ip.masterpip.id}"
-  }
-}
-
-resource "azurerm_lb_backend_address_pool" "backend_pool" {
-  resource_group_name = "${var.resource_group_name}"
-  loadbalancer_id     = "${azurerm_lb.masterlb.id}"
-  name                = "BackEndAddressPool"
-}
-
-resource "azurerm_lb_nat_rule" "ssh" {
-  resource_group_name            = "${var.resource_group_name}"
-  count                          = "${var.count}"
-  loadbalancer_id                = "${azurerm_lb.masterlb.id}"
-  name                           = "SSH${count.index}"
-  protocol                       = "Tcp"
-  frontend_port                  = "${22 + count.index}"
-  backend_port                   = 22
-  frontend_ip_configuration_name = "PublicIPAddress"
 }
 
 resource "azurerm_virtual_machine" "mastervm" {
@@ -117,7 +61,7 @@ resource "azurerm_virtual_machine" "mastervm" {
 }
 
 data "template_file" "cloud-config" {
-  template = "${file("${path.root}/bootstrap/bootstrap.sh")}"
+  template = "${file("${path.root}/templates/bootstrap.sh")}"
 
   vars {
     SUBSCRIPTION_ID = "${var.azure["subscription_id"]}"
@@ -131,8 +75,4 @@ data "template_file" "cloud-config" {
     admin_username  = "${var.admin_username}"
     kubeadm_token   = "${var.kubeadm_token}"
   }
-}
-
-output "local_ip_v4" {
-  value = ["${azurerm_network_interface.masternic.*.private_ip_address}"]
 }

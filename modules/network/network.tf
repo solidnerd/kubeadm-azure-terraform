@@ -1,6 +1,3 @@
-variable resource_group_name {}
-variable location {}
-
 # create virtual network
 resource "azurerm_virtual_network" "vnet" {
   name                = "vnet"
@@ -40,8 +37,4 @@ resource "azurerm_route_table" "routetable" {
   name                = "routetable"
   location            = "${var.location}"
   resource_group_name = "${var.resource_group_name}"
-}
-
-output "subnet_id" {
-  value = "${azurerm_subnet.subnet.id}"
 }

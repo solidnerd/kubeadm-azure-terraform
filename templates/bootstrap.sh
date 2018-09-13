@@ -11,6 +11,7 @@ apt-get install -y docker.io apt-transport-https
 
 mkdir -p /etc/kubernetes /etc/kubernetes/pki /etc/systemd/system/kubelet.service.d
 
+
 cat <<EOF >/etc/kubernetes/cloud-config
 {
   "cloud": "AzurePublicCloud",
