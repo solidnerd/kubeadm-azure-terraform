@@ -17,12 +17,11 @@ stages:
   - chmod 600 ~/.ssh/id_ed25519
   - eval "$(ssh-agent -s)"
   - ssh-add ~/.ssh/id_ed25519
-  - mkdir -p certs
   - terraform init
 
 shell:
   stage: validate
-  image: $CI_REGISTRY/beehive/containers/shellcheck:0.5.0
+  image: $CI_REGISTRY/containers/shellcheck:0.5.0
   script: 
   - echo "Checking $(find . -type f -name '*.sh' | wc -l) Shell files"
   - find . -type f -name '*.sh' | xargs shellcheck --external-sources
@@ -30,14 +29,14 @@ shell:
 
 terraform_validate:
   stage: validate
-  image: $CI_REGISTRY/beehive/containers/terraform:0.11.7-1
+  image: $CI_REGISTRY/containers/terraform:0.11.7-1
   script:
   - '[[ -z "$(terraform fmt -write=false)" ]] || { terraform fmt -write=false -diff; exit 1;}'
 
 terraform_plan:
   <<: *terraform
   stage: plan
-  image: $CI_REGISTRY/beehive/containers/terraform:0.11.7-1
+  image: $CI_REGISTRY/containers/terraform:0.11.7-1
   script:
   - mkdir -p plan
   - terraform plan -out="plan/${CI_COMMIT_SHA}.tfplan"
@@ -52,7 +51,7 @@ terraform_plan:
 terraform_apply:
   <<: *terraform
   stage: apply
-  image: $CI_REGISTRY/beehive/containers/terraform:0.11.7-1
+  image: $CI_REGISTRY/containers/terraform:0.11.7-1
   script:
   - terraform apply -auto-approve -input=false "plan/${CI_COMMIT_SHA}.tfplan"   
   artifacts:

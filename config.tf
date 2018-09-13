@@ -14,7 +14,7 @@ variable "resource_group_name" {
 
 variable "location" {
   description = "The location where the resources will be created"
-  default     = ""
+  default     = "westeurope"
 }
 
 variable "master_size" {
